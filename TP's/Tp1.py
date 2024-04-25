@@ -30,16 +30,17 @@ region= None
 
 if len(cp)== 8 and cp[0].isalpha() and cp[1:4].isdigit() and cp[5:7].isalpha():
     pais_del_codigo= 'Argentina'
-    if  cp[0] in codigos_provincias:
-        provincia = nombres_provincias[codigos_provincias.index(cp[0])] #No se si se puede usar index
+    if  cp[0].upper() in codigos_provincias:
+        provincia = nombres_provincias[codigos_provincias.index(cp[0].upper())]
 elif len(cp) == 4 and  cp[0:3].isdigit():
-    pais_del_codigo= 'Bolivia'
+    pais_del_codigo = 'Bolivia'
 elif  len(cp) == 9 and   cp[0:4].isdigit() and cp[5] == '-' and cp[6:9].isdigit():
-    pais_del_codigo= 'Brasil'
-    if  cp[0] in '0123':
-        region= 'Brasil0-3'
-    elif  cp[0] in '4567':
-        region= 'Brasil4-7'
+    pais_del_codigo = 'Brasil'
+    if  cp[0] in ['0', '1', '2', '3'] :
+        region = 'Brasil0-3'
+    elif  cp[0] in ['4', '5', '6', '7'] :
+        print('Entro a brasil 4-7')
+        region = 'Brasil4-7'
     else:
         region= 'Brasil8-9'
 elif len(cp) == 7 and cp.isdigit():
@@ -47,11 +48,11 @@ elif len(cp) == 7 and cp.isdigit():
 elif  len(cp) == 6 and  cp.isdigit():
     pais_del_codigo= 'Paraguay'
 elif len(cp) == 5 and cp.isdigit():
-    pais_del_codigo= 'Uruguay'
+    pais_del_codigo = 'Uruguay'
     if cp[0] ==  '1':
-        region='Montevideo'
+        region ='Montevideo'
 else:
-    pais_del_codigo= 'Otro'
+    pais_del_codigo = 'Otro'
 
 precios = 1100, 1800, 2450, 8300, 10900, 14300, 17900
 precio = precios[tipo]
@@ -67,7 +68,7 @@ elif region  == 'Brasil4-7':
     precio +=  precio * 0.30
 
 precio_final= precio
-if pago == '1':
+if pago == 1:
     precio_final = precio - (precio*0.10)
 
     
