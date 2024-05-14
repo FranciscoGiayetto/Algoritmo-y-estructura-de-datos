@@ -39,7 +39,6 @@ elif  len(cp) == 9 and   cp[0:4].isdigit() and cp[5] == '-' and cp[6:9].isdigit(
     if  cp[0] in ['0', '1', '2', '3'] :
         region = 'Brasil0-3'
     elif  cp[0] in ['4', '5', '6', '7'] :
-        print('Entro a brasil 4-7')
         region = 'Brasil4-7'
     else:
         region= 'Brasil8-9'
