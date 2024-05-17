@@ -9,6 +9,7 @@ multiplo_otro=0
 numero_mayor= 0
 total_promedio=0
 contador_pares_multiplos_11=0
+
 lista=[]
 for i in range(25000):
     #numero aleatorios
