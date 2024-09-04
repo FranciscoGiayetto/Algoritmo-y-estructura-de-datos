@@ -1,5 +1,55 @@
-from envios import Envio
+import Functions
 
+def veiificacion_forma_pago(valor):
+    return valor == 2 or valor == 1
+
+def buscar_codigo_postal(lista,codigo):
+    izquierda = 0
+    derecha = len(lista) - 1
+    
+    while izquierda <= derecha:
+        medio = (izquierda + derecha) // 2
+        codigo_postal_medio = lista[medio].codigo  # Accede al atributo 'codigo'
+        
+        if codigo_postal_medio == codigo:
+            return lista[medio]  # Retorna el índice del código postal encontrado
+        elif codigo_postal_medio < codigo:
+            izquierda = medio + 1
+        else:
+            derecha = medio - 1
+    
+    return False
+
+def ordenar_menor_mayor(lista,cantidad,mostrar):
+        
+    n = len(lista)
+    mitad = n // 2  # Inicia con la mitad del tamaño del arreglo
+
+    # Reduce el gap hasta 0
+    while mitad > 0:
+        for i in range(mitad, n):
+            temp = lista[i]  # Guarda el objeto completo
+            j = i
+            while j >= mitad and lista[j - mitad].codigo > temp.codigo:
+                lista[j] = lista[j - mitad]  # Mueve el objeto completo
+                j -= mitad
+
+            lista[j] = temp  # Inserta el objeto en su lugar correcto
+
+        mitad //= 2
+    if mostrar == True:
+        if cantidad == 0:
+            for item in lista:
+                print(item.codigo)
+        else:
+            for item in range(0,cantidad):
+                print(lista[item].codigo)
+            
+    return lista
+
+
+
+        
 def buscar_estructura_control(linea):
     for i in range(len(linea)):
         if linea[i: i + 2] == 'HC':
@@ -70,34 +120,12 @@ def verificacion_envio(tipo_envio):
     else:
         return 'Carta express'
 
-
-def mostrar_r2_r3(parametro1, parametro2):
-    print(' (r2) - Cantidad de envios con direccion valida:', parametro1)
-    print(' (r3) - Cantidad de envios con direccion no valida:', parametro2)
-
-
-def calcular_promedio_envios_ba(precio_total, cantidad_envios):
-    if cantidad_envios != 0:
-        return int(precio_total / cantidad_envios)
+def validacion_tipo_envio(tipo_envio):
+    if tipo_envio in (0,1,2,3,4,5,6):
+        return True
     else:
-        return 0
+        return False
 
-
-def calcular_promedio_envios_internacionales(envios_totales, envios_internacionales):
-    return int((100 * envios_internacionales) / envios_totales)
-
-
-def calcular_tipo_mayor(contador_carta_simple, contador_carta_certificada, contador_carta_express):
-    if contador_carta_simple > contador_carta_certificada and contador_carta_simple > contador_carta_express:
-        return 'Carta simple'
-    elif contador_carta_certificada > contador_carta_simple and contador_carta_certificada > contador_carta_express:
-        return 'Carta certificada'
-    elif contador_carta_simple == contador_carta_express or contador_carta_simple == contador_carta_certificada:
-        return 'Carta simple'
-    elif contador_carta_certificada == contador_carta_express:
-        return 'Carta certificada'
-    else:
-        return 'Carta express'
 
 
 def test_calculo(cp, tipo, pago):
@@ -298,38 +326,116 @@ def cargar_datos_archivo():
                     menor_importe_brasil = precio
                     mencp = codigo_postal
             
-            envio= Envio(codigo_postal,direccion,tipo_envio,forma_pago)
+            envio= Functions.Envio(codigo_postal,direccion,tipo_envio,forma_pago)
             envios_lista.append(envio)
     envios.close()
     return envios_lista
 
 def carga_teclado():
-    envios_lista=[]
     codigo_postal=normalizacion_codigo_postal(input('Ingrese el codigo postal'))
     direccion=normalizacion_direccion(input('Ingrese la direccion'))
-    tipo_envio=input('Ingrese el tipo de envio')
-    forma_pago=input('Ingrese la forma de pago')
-    envio= Envio(codigo_postal,direccion,tipo_envio,forma_pago)
-    envios_lista.append(envio)
+    continuar= True
 
-    return envios_lista
+    while continuar:
+        tipo_envio= int(input('Ingrese el tipo de envio del 0 al 6'))
+        if validacion_tipo_envio(tipo_envio):
+            continuar = False
+        else:
+            print('El tipo de envio no es valido')
+    continuar = True
+    while continuar:
+        forma_pago = int(input('Ingrese la forma de pago(1-efectivo 2-tarjeta de credito)'))
+        if veiificacion_forma_pago(forma_pago):
+            continuar= False
+        else:
+            print('La forma de pago no es valida')
+
+    envio= Functions.Envio(codigo_postal,direccion,tipo_envio,forma_pago)
+
+    return envio
+
+
+def buscar_direc_y_tp(lista_envios):
+    resultado_envio = None
+    bsqd_direccion = input('Ingrese la direccion del envio: ')
+    continuar= True
+    while continuar:
+        bsqd_tipo_envio = int(input('Ingrese el tipo del envio: '))
+        if validacion_tipo_envio(bsqd_tipo_envio):
+            continuar = False
+        else:
+            print('El tipo de envio no es valido')
+    
+    for envio in lista_envios:
+        if envio.direccion == bsqd_direccion and envio.tipo == bsqd_tipo_envio:
+            resultado_envio = envio.mostrar()
+            break
+            
+    if resultado_envio is not None:
+        print(f"El resultado de la busqueda es: {resultado_envio}")
+    else:
+        print("No existe ningun envio que coincida con la busqueda")
+        
+    return
 
 def principal():
-    i = 0
-    if i == 0:
-        lista_envios=[]
-        i= 1
-    opcion= input('1- Cargar datos del archivo /n 2- Cargar datos por teclado')
-    if opcion == '1':
-        confirmacion=input('Se eliminara la lista actual ¿quiere seguir? s/n')
-        if confirmacion.lower() == 's':
-            lista_envios=[]
-            lista_envios=cargar_datos_archivo()
+    lista_envios=[]
+    opcion=0
+    while opcion != '10':
+        opcion= input('1- Cargar datos del archivo \n 2- Cargar datos por teclado \n 3-Mostrar registros \n 4-Buscar envio por direccion y tipo de envio \n 5- buscar codigo postal \n 9- calcular y mostrar importe final del envio \n 10- Salir')
+        #dos vectorr y funciones
+        if opcion == '1':
+            confirmacion=input('Se eliminara la lista actual ¿quiere seguir? s/n')
+            if confirmacion.lower() == 's':
+                lista_envios=[]
+                lista_envios=cargar_datos_archivo()
+            else:
+                print('No se cargaron datos')
+
+        elif opcion == '2':
+            lista_envios.append(carga_teclado())
             print(lista_envios)
-        else:
-            print('No se cargaron datos')
-    elif opcion == '2':
-        carga_teclado()
+
+        elif opcion == '3':
+            decision=int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros'))
+            lista_envios=ordenar_menor_mayor(lista_envios,decision,True)
+        
+        elif  opcion == '4':
+            if lista_envios != []:
+                buscar_direc_y_tp(lista_envios)
+            else:
+                print('No existen envios cargados, cargar envios para realizar la busqueda')
+        
+        elif opcion == '5':
+            codigo=input('ingrese el codigo posta a buscar: ')
+
+            envio= buscar_codigo_postal(ordenar_menor_mayor(lista_envios,0,False),codigo)
+            if envio is not False:
+                print('Lo hemos encontrado')
+                print(envio.mostrar(), 'Antes')
+                if envio.forma_pago == '1':
+                    envio.forma_pago = 2
+                else:
+                    envio.forma_pago = 1
+                
+                print(envio.mostrar(), 'Despues')
+            else:
+                print('No encontrado')
+        elif opcion == '9':
+            suma=0
+            cantidad=0
+            contador=0
+            for item in lista_envios:
+                cantidad += 1
+                suma += test_calculo(item.codigo,item.tipo,item.forma_pago)[0]
+            promedio= suma // cantidad
+            for item in lista_envios:
+                if test_calculo(item.codigo,item.tipo,item.forma_pago)[0] < promedio:
+                    contador +=1
+            print(suma, cantidad)
+            print(promedio, 'cantidad menores al promedio ', contador)
+            
+
         
 
 

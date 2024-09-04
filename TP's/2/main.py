@@ -217,7 +217,7 @@ def test_calculo(cp, tipo, pago):
 
 
 def procesamiento_de_datos():
-    envios = open("envios.txt", "r", encoding="utf-8")
+    envios = open("../3/envios-tp3.txt", "r", encoding="utf-8")
     flag = True
     control = ''
     codigo_postal = ''
