@@ -40,10 +40,10 @@ def ordenar_menor_mayor(lista,cantidad,mostrar):
     if mostrar == True:
         if cantidad == 0:
             for item in lista:
-                print(item.codigo)
+                print(item.mostrar())
         else:
             for item in range(0,cantidad):
-                print(lista[item].codigo)
+                print(lista[item].mostrar())
             
     return lista
 
@@ -243,7 +243,7 @@ def test_calculo(cp, tipo, pago):
     if pago == 1:
         final = int(0.9 * inicial)
 
-    return final, destino, envio_BA
+    return final, destino
 
 
 def cargar_datos_archivo():
@@ -298,7 +298,7 @@ def cargar_datos_archivo():
 
             tipo_envio = int(linea[29])
             forma_pago = int(linea[30])
-            precio, pais_del_codigo, flag_BA = test_calculo(codigo_postal, tipo_envio, forma_pago)
+            precio, pais_del_codigo = test_calculo(codigo_postal, tipo_envio, forma_pago)
             if control_valido:
                 if tipo_envio is not None:
                     if verificacion_envio(tipo_envio) == 'Carta simple':
@@ -326,12 +326,12 @@ def cargar_datos_archivo():
                     menor_importe_brasil = precio
                     mencp = codigo_postal
             
-            envio= Functions.Envio(codigo_postal,direccion,tipo_envio,forma_pago)
+            envio= Functions.Envio(codigo_postal,direccion,tipo_envio, forma_pago, hard_control=control, importe=precio, pais=pais_del_codigo, valido=control_valido)
             envios_lista.append(envio)
     envios.close()
     return envios_lista
 
-def carga_teclado():
+def carga_teclado(lista_envios):
     codigo_postal=normalizacion_codigo_postal(input('Ingrese el codigo postal: '))
     direccion=normalizacion_direccion(input('Ingrese la direccion: '))
     continuar= True
@@ -350,8 +350,21 @@ def carga_teclado():
             continuar= False
         else:
             print('\033[1m La forma de pago no es valida\033[0m')
+    
+    precio, pais_del_codigo = test_calculo(codigo_postal, tipo_envio, forma_pago)
 
-    envio= Functions.Envio(codigo_postal,direccion,tipo_envio,forma_pago)
+    valido = False
+
+    if lista_envios and lista_envios[-1].hard_control == 'Hard Control':
+        valido = hard_control(direccion)
+    elif lista_envios:
+        valido = True
+
+
+    if not valido:
+        valido = hard_control(direccion)
+
+    envio = Functions.Envio(codigo_postal,direccion,tipo_envio,forma_pago,importe=precio,pais=pais_del_codigo,hard_control=lista_envios[-1].hard_control if lista_envios else 'Hard Control',valido=valido)
 
     return envio
 
@@ -379,6 +392,18 @@ def buscar_direc_y_tp(lista_envios):
         
     return
 
+def cantidad_de_envios_por_tipo(lista_envios):
+    cont_envios_validos=[0,0,0,0,0,0,0]
+    cont_importes_final=[0,0,0,0,0,0,0]
+    for envio in lista_envios:
+        if envio.valido:
+            cont_envios_validos[envio.tipo] += 1
+            cont_importes_final[envio.tipo] += envio.importe
+
+    
+    return cont_envios_validos, cont_importes_final
+            
+
 def mostrar_menu():
     print("\n" + "=" * 40)
     print("        MENÚ DE OPCIONES        ")
@@ -388,6 +413,9 @@ def mostrar_menu():
     print("3 - Mostrar registros")
     print("4 - Buscar envío por dirección y tipo de envío")
     print("5 - Buscar código postal")
+    print("6 - Determinar cantidad de tipos de envios")
+    print("7 - Calcular importes finales por tipos")
+    print("8 - Mostrar envio con mayor importe acumulado y porcentaje sobre total")
     print("9 - Calcular y mostrar importe final del envío")
     print("10 - Salir")
     print("=" * 40 + "\n")
@@ -405,11 +433,11 @@ def opcion_1(lista_envios):
         print('\033[1m No se cargaron datos.\033[0m')
 
 def opcion_2(lista_envios):
-    lista_envios.append(carga_teclado())
+    lista_envios.append(carga_teclado(lista_envios))
     print("\033[1mDatos cargados manualmente.\033[0m")
 
 def opcion_3(lista_envios):
-    decision=int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros'))
+    decision=int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros: '))
     lista_envios=ordenar_menor_mayor(lista_envios,decision,True)
 
 def opcion_4(lista_envios):
@@ -419,20 +447,51 @@ def opcion_4(lista_envios):
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[1m')
 
 def opcion_5(lista_envios):
-    codigo=input('ingrese el codigo posta a buscar: ')
-    envio= buscar_codigo_postal(ordenar_menor_mayor(lista_envios,0,False),codigo)
-    if envio is not False:
-        print('\033[1m Lo hemos encontrado \033[1m')
-        print(envio.mostrar(), 'Antes')
-        if envio.forma_pago == '1':
-            envio.forma_pago = 2
+    if lista_envios:
+        codigo=input('ingrese el codigo posta a buscar: ')
+        envio= buscar_codigo_postal(ordenar_menor_mayor(lista_envios,0,False),codigo)
+        if envio is not False:
+            print('\033[1m Lo hemos encontrado \033[1m')
+            print(envio.mostrar(), 'Antes')
+            if envio.forma_pago == '1':
+                envio.forma_pago = 2
+            else:
+                envio.forma_pago = 1
+                    
+            print(envio.mostrar(), 'Despues')
         else:
-            envio.forma_pago = 1
-                
-        print(envio.mostrar(), 'Despues')
+            print('\033[1m No encontrado \033[1m')
     else:
-        print('\033[1m No encontrado \033[1m')
+        print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[1m')
+    
 
+def opcion_6(lista_envios):
+    if lista_envios:
+        #Hacer un print para que se entienda cual es cada tipo
+        print(cantidad_de_envios_por_tipo(lista_envios)[0])
+    else:
+        print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[1m')
+
+def opcion_7(lista_envios):
+    if lista_envios:
+        #Hacer un print para que se entienda cual es cada tipo
+        print(cantidad_de_envios_por_tipo(lista_envios)[1])
+    else:
+        print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[1m')
+
+
+def opcion_8(lista_envios):
+    #cambiar que solo se pueda cuando se toco antes el 7
+    if lista_envios and cantidad_de_envios_por_tipo(lista_envios)[1]:
+        print(sum(cantidad_de_envios_por_tipo(lista_envios)[1]))
+        porcentaje= max(cantidad_de_envios_por_tipo(lista_envios)[1]) / sum(cantidad_de_envios_por_tipo(lista_envios)[1])
+        print('El maximo fue: ',max(cantidad_de_envios_por_tipo(lista_envios)[1]), 'Porcentaje %', int(porcentaje * 100))
+    else:
+        print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[1m')
+
+
+    
+#Cambiar para solo usar el campo importe
 def opcion_9(lista_envios):
     suma=0
     cantidad=0
@@ -455,9 +514,9 @@ def principal():
         opcion_3,  
         opcion_4,  
         opcion_5,  
-        None,      # Las otras acciones
-        None,
-        None,
+        opcion_6,      
+        opcion_7,
+        opcion_8,
         opcion_9   
     ]
 
@@ -473,6 +532,7 @@ def principal():
 
         if 1 <= opcion_int <= 9 and acciones[opcion_int - 1]:
             acciones[opcion_int - 1](lista_envios)
+            
         elif opcion_int == 10:
             print('\033[1m  Nos vemos! \033[0m')
         else:
