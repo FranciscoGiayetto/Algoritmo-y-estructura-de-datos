@@ -1,7 +1,7 @@
 import Functions
 
 def veiificacion_forma_pago(valor):
-    return valor == 2 or valor == 1
+    return valor in [1, 2]
 
 def buscar_codigo_postal(lista,codigo):
     izquierda = 0
@@ -9,10 +9,10 @@ def buscar_codigo_postal(lista,codigo):
     
     while izquierda <= derecha:
         medio = (izquierda + derecha) // 2
-        codigo_postal_medio = lista[medio].codigo  # Accede al atributo 'codigo'
+        codigo_postal_medio = lista[medio].codigo  
         
         if codigo_postal_medio == codigo:
-            return lista[medio]  # Retorna el índice del código postal encontrado
+            return lista[medio]  
         elif codigo_postal_medio < codigo:
             izquierda = medio + 1
         else:
@@ -332,23 +332,24 @@ def cargar_datos_archivo():
     return envios_lista
 
 def carga_teclado():
-    codigo_postal=normalizacion_codigo_postal(input('Ingrese el codigo postal'))
-    direccion=normalizacion_direccion(input('Ingrese la direccion'))
+    codigo_postal=normalizacion_codigo_postal(input('Ingrese el codigo postal: '))
+    direccion=normalizacion_direccion(input('Ingrese la direccion: '))
     continuar= True
 
     while continuar:
-        tipo_envio= int(input('Ingrese el tipo de envio del 0 al 6'))
+        #faltan poner cuales son los tipos 
+        tipo_envio= int(input('Ingrese el tipo de envio del 0 al 6: '))
         if validacion_tipo_envio(tipo_envio):
             continuar = False
         else:
-            print('El tipo de envio no es valido')
+            print('\033[1m El tipo de envio no es valido\033[0m')
     continuar = True
     while continuar:
-        forma_pago = int(input('Ingrese la forma de pago(1-efectivo 2-tarjeta de credito)'))
+        forma_pago = int(input('Ingrese la forma de pago(1-efectivo 2-tarjeta de credito: )'))
         if veiificacion_forma_pago(forma_pago):
             continuar= False
         else:
-            print('La forma de pago no es valida')
+            print('\033[1m La forma de pago no es valida\033[0m')
 
     envio= Functions.Envio(codigo_postal,direccion,tipo_envio,forma_pago)
 
@@ -364,7 +365,7 @@ def buscar_direc_y_tp(lista_envios):
         if validacion_tipo_envio(bsqd_tipo_envio):
             continuar = False
         else:
-            print('El tipo de envio no es valido')
+            print('\033[1m El tipo de envio no es valido \033[0m')
     
     for envio in lista_envios:
         if envio.direccion == bsqd_direccion and envio.tipo == bsqd_tipo_envio:
@@ -374,69 +375,108 @@ def buscar_direc_y_tp(lista_envios):
     if resultado_envio is not None:
         print(f"El resultado de la busqueda es: {resultado_envio}")
     else:
-        print("No existe ningun envio que coincida con la busqueda")
+        print("\033[1mNo existe ningun envio que coincida con la busqueda\033[0m")
         
     return
 
-def principal():
-    lista_envios=[]
-    opcion=0
-    while opcion != '10':
-        opcion= input('1- Cargar datos del archivo \n 2- Cargar datos por teclado \n 3-Mostrar registros \n 4-Buscar envio por direccion y tipo de envio \n 5- buscar codigo postal \n 9- calcular y mostrar importe final del envio \n 10- Salir')
-        #dos vectorr y funciones
-        if opcion == '1':
-            confirmacion=input('Se eliminara la lista actual ¿quiere seguir? s/n')
-            if confirmacion.lower() == 's':
-                lista_envios=[]
-                lista_envios=cargar_datos_archivo()
-            else:
-                print('No se cargaron datos')
+def mostrar_menu():
+    print("\n" + "=" * 40)
+    print("        MENÚ DE OPCIONES        ")
+    print("=" * 40)
+    print("1 - Cargar datos del archivo")
+    print("2 - Cargar datos por teclado")
+    print("3 - Mostrar registros")
+    print("4 - Buscar envío por dirección y tipo de envío")
+    print("5 - Buscar código postal")
+    print("9 - Calcular y mostrar importe final del envío")
+    print("10 - Salir")
+    print("=" * 40 + "\n")
 
-        elif opcion == '2':
-            lista_envios.append(carga_teclado())
-            print(lista_envios)
+def obtener_opcion():
+    return input("Por favor, elige una opción: ")
 
-        elif opcion == '3':
-            decision=int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros'))
-            lista_envios=ordenar_menor_mayor(lista_envios,decision,True)
-        
-        elif  opcion == '4':
-            if lista_envios != []:
-                buscar_direc_y_tp(lista_envios)
-            else:
-                print('No existen envios cargados, cargar envios para realizar la busqueda')
-        
-        elif opcion == '5':
-            codigo=input('ingrese el codigo posta a buscar: ')
+def opcion_1(lista_envios):
+    confirmacion = input('Se eliminará la lista actual ¿quiere seguir? s/n: ')
+    if confirmacion.lower() == 's':
+        lista_envios.clear()
+        lista_envios.extend(cargar_datos_archivo())
+        print("\033[1m Datos cargados del archivo.\033[0m")
+    else:
+        print('\033[1m No se cargaron datos.\033[0m')
 
-            envio= buscar_codigo_postal(ordenar_menor_mayor(lista_envios,0,False),codigo)
-            if envio is not False:
-                print('Lo hemos encontrado')
-                print(envio.mostrar(), 'Antes')
-                if envio.forma_pago == '1':
-                    envio.forma_pago = 2
-                else:
-                    envio.forma_pago = 1
+def opcion_2(lista_envios):
+    lista_envios.append(carga_teclado())
+    print("\033[1mDatos cargados manualmente.\033[0m")
+
+def opcion_3(lista_envios):
+    decision=int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros'))
+    lista_envios=ordenar_menor_mayor(lista_envios,decision,True)
+
+def opcion_4(lista_envios):
+    if lista_envios:
+        buscar_direc_y_tp(lista_envios)
+    else:
+        print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[1m')
+
+def opcion_5(lista_envios):
+    codigo=input('ingrese el codigo posta a buscar: ')
+    envio= buscar_codigo_postal(ordenar_menor_mayor(lista_envios,0,False),codigo)
+    if envio is not False:
+        print('\033[1m Lo hemos encontrado \033[1m')
+        print(envio.mostrar(), 'Antes')
+        if envio.forma_pago == '1':
+            envio.forma_pago = 2
+        else:
+            envio.forma_pago = 1
                 
-                print(envio.mostrar(), 'Despues')
-            else:
-                print('No encontrado')
-        elif opcion == '9':
-            suma=0
-            cantidad=0
-            contador=0
-            for item in lista_envios:
-                cantidad += 1
-                suma += test_calculo(item.codigo,item.tipo,item.forma_pago)[0]
-            promedio= suma // cantidad
-            for item in lista_envios:
-                if test_calculo(item.codigo,item.tipo,item.forma_pago)[0] < promedio:
-                    contador +=1
-            print(suma, cantidad)
-            print(promedio, 'cantidad menores al promedio ', contador)
+        print(envio.mostrar(), 'Despues')
+    else:
+        print('\033[1m No encontrado \033[1m')
+
+def opcion_9(lista_envios):
+    suma=0
+    cantidad=0
+    contador=0
+    for item in lista_envios:
+        cantidad += 1
+        suma += test_calculo(item.codigo,item.tipo,item.forma_pago)[0]
+    promedio= suma // cantidad if cantidad > 0 else 0
+    for item in lista_envios:
+        if test_calculo(item.codigo,item.tipo,item.forma_pago)[0] < promedio:
+            contador +=1
+    print('Promedio: ',promedio, '\nCantidad menores al promedio: ', contador)
+
+def principal():
+    lista_envios = []
+    opcion_int = 0
+    acciones = [
+        opcion_1, 
+        opcion_2,  
+        opcion_3,  
+        opcion_4,  
+        opcion_5,  
+        None,      # Las otras acciones
+        None,
+        None,
+        opcion_9   
+    ]
+
+    while opcion_int != 10:
+        mostrar_menu()
+        opcion = obtener_opcion()
+
+        if son_numeros(opcion):
+            opcion_int=int(opcion)
+        else:
+            print("\033[1m Opción no válida, ingrese un número.\033[0m")
             
 
-        
+        if 1 <= opcion_int <= 9 and acciones[opcion_int - 1]:
+            acciones[opcion_int - 1](lista_envios)
+        elif opcion_int == 10:
+            print('\033[1m  Nos vemos! \033[0m')
+        else:
+            print("\033[1m  Opción no válida, intente de nuevo.\033[0m")
 
 
 if __name__ == '__main__':

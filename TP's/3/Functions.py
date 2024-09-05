@@ -1,5 +1,5 @@
 class Envio:
-    def __init__(self,codigo,direccion,tipo,forma_pago, hard_control, importe=0):
+    def __init__(self,codigo,direccion,tipo,forma_pago, hard_control=None, importe=0):
         self.codigo= codigo
         self.direccion= direccion
         self.tipo= tipo
