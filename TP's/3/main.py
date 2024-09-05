@@ -508,17 +508,7 @@ def opcion_9(lista_envios):
 def principal():
     lista_envios = []
     opcion_int = 0
-    acciones = [
-        opcion_1, 
-        opcion_2,  
-        opcion_3,  
-        opcion_4,  
-        opcion_5,  
-        opcion_6,      
-        opcion_7,
-        opcion_8,
-        opcion_9   
-    ]
+    acciones = [opcion_1,opcion_2,opcion_3,opcion_4,opcion_5,opcion_6,opcion_7,opcion_8,opcion_9]
 
     while opcion_int != 10:
         mostrar_menu()
@@ -526,18 +516,14 @@ def principal():
 
         if son_numeros(opcion):
             opcion_int=int(opcion)
-        else:
-            print("\033[1m Opción no válida, ingrese un número.\033[0m")
-            
-
-        if 1 <= opcion_int <= 9 and acciones[opcion_int - 1]:
-            acciones[opcion_int - 1](lista_envios)
-            
         elif opcion_int == 10:
             print('\033[1m  Nos vemos! \033[0m')
         else:
-            print("\033[1m  Opción no válida, intente de nuevo.\033[0m")
-
+            print("\033[1m Opción no válida, ingrese un número.\033[0m")
+   
+        if 1 <= opcion_int <= 9 and acciones[opcion_int - 1]:
+            acciones[opcion_int - 1](lista_envios)
+            
 
 if __name__ == '__main__':
     principal()
