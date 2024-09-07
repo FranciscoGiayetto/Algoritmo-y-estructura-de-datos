@@ -1,20 +1,13 @@
 class Envio:
-    def __init__(self, codigo, direccion, tipo, forma_pago, valido, hard_control='Hard Control', importe=0):
+    def __init__(self, codigo, direccion, tipo, forma_pago, importe=0):
         self.codigo= codigo
         self.direccion= direccion
         self.tipo= tipo
         self.forma_pago= forma_pago
         self.importe = importe 
-        #tipo de control
-        self.hard_control = hard_control
-        #si la direccion es valida
-        self.valido = valido
 
-    def __str__(self):
-        return str(self.codigo)
-    
     def mostrar(self):
-        return f"Codigo: {self.codigo} / Dirección: {self.direccion} / Importe: {self.importe} / Tipo de envio {self.tipo} / Forma de Pago {self.forma_pago} / Control: {self.hard_control} / Valido: {self.valido}"
+        return f"Codigo: {self.codigo} / Dirección: {self.direccion} / Importe: {self.importe} / Tipo de envio {self.tipo} / Forma de Pago {self.forma_pago}"
     
 
 def veiificacion_forma_pago(valor):
@@ -261,7 +254,6 @@ def cargar_datos_archivo():
     tipo_envio = None
     forma_pago = 0
     precio = 0
-    control_valido = True
     envios_lista=[]
     for linea in envios:
         if flag:
@@ -270,18 +262,15 @@ def cargar_datos_archivo():
         else:
             codigo_postal = normalizacion_codigo_postal(linea[:9])
             direccion = normalizacion_direccion(linea[9:28])
-            if control == 'Hard Control' and hard_control(direccion):
-                control_valido = True
-            else:
-                control_valido = False
             tipo_envio = int(linea[29])
             forma_pago = int(linea[30])
             precio = test_calculo(codigo_postal, tipo_envio, forma_pago)
             
-            envio= Envio(codigo_postal,direccion,tipo_envio, forma_pago, hard_control=control, importe=precio, valido=control_valido)
+            envio= Envio(codigo_postal,direccion,tipo_envio, forma_pago, importe=precio)
+            
             envios_lista.append(envio)
     envios.close()
-    return envios_lista
+    return envios_lista, control
 
 def carga_teclado(lista_envios):
     codigo_postal=normalizacion_codigo_postal(input('Ingrese el codigo postal: '))
@@ -306,16 +295,10 @@ def carga_teclado(lista_envios):
 
     valido = False
 
-    if lista_envios and lista_envios[-1].hard_control == 'Hard Control':
-        valido = hard_control(direccion)
-    elif lista_envios:
-        valido = True
-
 
     if not valido:
         valido = hard_control(direccion)
-    envio = Envio(codigo_postal,direccion,tipo_envio,forma_pago,importe=precio,hard_control=lista_envios[-1].hard_control if lista_envios else 'Hard Control',valido=valido)
-
+    envio = Envio(codigo_postal,direccion,tipo_envio,forma_pago,importe=precio)
     return envio
 
 
@@ -341,11 +324,11 @@ def buscar_direc_y_tp(lista_envios):
         print("\033[1mNo existe ningun envio que coincida con la busqueda\033[0m")
     
 
-def cantidad_de_envios_por_tipo(lista_envios):
+def cantidad_de_envios_por_tipo(lista_envios,control):
     cont_envios_validos=[0,0,0,0,0,0,0]
     cont_importes_final=[0,0,0,0,0,0,0]
     for envio in lista_envios:
-        if envio.valido:
+        if hard_control(envio.direccion) or control == 'Soft Control':
             cont_envios_validos[envio.tipo] += 1
             cont_importes_final[envio.tipo] += envio.importe
 
@@ -371,30 +354,31 @@ def mostrar_menu():
 def obtener_opcion():
     return input("Por favor, elige una opción: ")
 
-def opcion_1(lista_envios):
+def opcion_1(lista_envios, tipo_control):
     confirmacion = input('Se eliminará la lista actual ¿quiere seguir? s/n: ')
     if confirmacion.lower() == 's':
         lista_envios.clear()
-        lista_envios.extend(cargar_datos_archivo())
+        lista_envios.extend(cargar_datos_archivo()[0])
         print("\033[1m Datos cargados del archivo.\033[0m")
     else:
         print('\033[1m No se cargaron datos.\033[0m')
-
-def opcion_2(lista_envios):
+    return cargar_datos_archivo()[1]
+ 
+def opcion_2(lista_envios, tipo_control):
     lista_envios.append(carga_teclado(lista_envios))
     print("\033[1mDatos cargados manualmente.\033[0m")
 
-def opcion_3(lista_envios):
+def opcion_3(lista_envios, tipo_control):
     decision=int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros: '))
     lista_envios=ordenar_menor_mayor(lista_envios,decision,True)
 
-def opcion_4(lista_envios):
+def opcion_4(lista_envios, tipo_control):
     if lista_envios:
         buscar_direc_y_tp(lista_envios)
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
 
-def opcion_5(lista_envios):
+def opcion_5(lista_envios, tipo_control):
     if lista_envios:
         codigo=input('ingrese el codigo posta a buscar: ')
         envio= buscar_codigo_postal(ordenar_menor_mayor(lista_envios,0,False),codigo)
@@ -412,42 +396,42 @@ def opcion_5(lista_envios):
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
     
-def mostrar_envios_tipo(lista_envios,numero):
+def mostrar_envios_tipo(lista_envios,numero,control):
     if lista_envios:
         tipos = ['Carta Simple ', 'Carta Simple ', 'Carta Simple ', 
                  'Carta Certificada ', 'Carta Certificada ', 
                  'Carta Expresa ', 'Carta Expresa ']   
-        cantidad_envios= cantidad_de_envios_por_tipo(lista_envios)[numero]
+        cantidad_envios= cantidad_de_envios_por_tipo(lista_envios,control)[numero]
         for i in range(len(tipos)):
             print(f'Tipo: ', i, ' cantidad: ', cantidad_envios[i])
                
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
 
-def opcion_6(lista_envios):
-    mostrar_envios_tipo(lista_envios,0)
+def opcion_6(lista_envios, tipo_control):
+    mostrar_envios_tipo(lista_envios,0,tipo_control)
 
-def opcion_7(lista_envios):
-    mostrar_envios_tipo(lista_envios,1)
+def opcion_7(lista_envios, tipo_control):
+    mostrar_envios_tipo(lista_envios,1,tipo_control)
 
-def opcion_8(lista_envios):
-    if lista_envios and cantidad_de_envios_por_tipo(lista_envios)[1]:
-        print(sum(cantidad_de_envios_por_tipo(lista_envios)[1]))
-        porcentaje= max(cantidad_de_envios_por_tipo(lista_envios)[1]) / sum(cantidad_de_envios_por_tipo(lista_envios)[1])
-        print('El maximo fue: ',max(cantidad_de_envios_por_tipo(lista_envios)[1]), 'Porcentaje %', int(porcentaje * 100))
+def opcion_8(lista_envios, tipo_control):
+    if lista_envios and cantidad_de_envios_por_tipo(lista_envios,tipo_control)[1]:
+        print(sum(cantidad_de_envios_por_tipo(lista_envios,tipo_control)[1]))
+        porcentaje= max(cantidad_de_envios_por_tipo(lista_envios,tipo_control)[1]) / sum(cantidad_de_envios_por_tipo(lista_envios,tipo_control)[1])
+        print('El maximo fue: ',max(cantidad_de_envios_por_tipo(lista_envios,tipo_control)[1]), 'Porcentaje %', int(porcentaje * 100))
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
 
 
-def opcion_9(lista_envios):
+def opcion_9(lista_envios, tipo_control):
     suma=0
     cantidad=0
     contador=0
     for item in lista_envios:
         cantidad += 1
-        suma += test_calculo(item.codigo,item.tipo,item.forma_pago)[0]
+        suma += test_calculo(item.codigo,item.tipo,item.forma_pago)
     promedio= suma // cantidad if cantidad > 0 else 0
     for item in lista_envios:
-        if test_calculo(item.codigo,item.tipo,item.forma_pago)[0] < promedio:
+        if test_calculo(item.codigo,item.tipo,item.forma_pago) < promedio:
             contador +=1
     print('Promedio: ',promedio, '\nCantidad menores al promedio: ', contador)
