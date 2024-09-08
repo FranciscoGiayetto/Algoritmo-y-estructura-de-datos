@@ -6,10 +6,13 @@ class Envio:
         self.forma_pago = forma_pago
 
     def get_importe(self):
-        return calcular_importe(self.codigo, self.tipo, self.forma_pago)
+        return calcular_importe(self.codigo, self.tipo, self.forma_pago)[0]
 
+    def get_destino(self):
+        return calcular_importe(self.codigo, self.tipo, self.forma_pago)[1]
+    
     def mostrar(self):
-        return f"Codigo: {self.codigo} / Dirección: {self.direccion}/ Tipo de envio {self.tipo} / Forma de Pago {self.forma_pago}"
+        return f"Código: {self.codigo} / Dirección: {self.direccion}/ Tipo de envío {self.tipo} / Forma de Pago {self.forma_pago} / País: {self.get_destino()}"
 
 
 def veiificacion_forma_pago(valor):
@@ -243,7 +246,7 @@ def calcular_importe(cp, tipo, pago):
     if pago == 1:
         final = int(0.9 * inicial)
 
-    return final
+    return final, destino
 
 
 def cargar_datos_archivo():
@@ -292,7 +295,7 @@ def carga_teclado(lista_envios):
         else:
             print('\033[1m La forma de pago no es valida\033[0m')
 
-    precio = calcular_importe(codigo_postal, tipo_envio, forma_pago)
+    precio = calcular_importe(codigo_postal, tipo_envio, forma_pago)[0]
 
     valido = False
 
