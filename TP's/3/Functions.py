@@ -1,13 +1,15 @@
 class Envio:
-    def __init__(self, codigo, direccion, tipo, forma_pago, importe=0):
+    def __init__(self, codigo, direccion, tipo, forma_pago):
         self.codigo= codigo
         self.direccion= direccion
         self.tipo= tipo
         self.forma_pago= forma_pago
-        self.importe = importe 
+
+    def get_importe(self):
+        return calcular_importe(self.codigo, self.tipo, self.forma_pago)
 
     def mostrar(self):
-        return f"Codigo: {self.codigo} / Dirección: {self.direccion} / Importe: {self.importe} / Tipo de envio {self.tipo} / Forma de Pago {self.forma_pago}"
+        return f"Codigo: {self.codigo} / Dirección: {self.direccion}/ Tipo de envio {self.tipo} / Forma de Pago {self.forma_pago}"
     
 
 def veiificacion_forma_pago(valor):
@@ -137,7 +139,7 @@ def validacion_tipo_envio(tipo_envio):
 
 
 
-def test_calculo(cp, tipo, pago):
+def calcular_importe(cp, tipo, pago):
     n = len(cp)
     if n < 4 or n > 9:
         destino = 'Otro'
@@ -253,7 +255,6 @@ def cargar_datos_archivo():
     direccion = ''
     tipo_envio = None
     forma_pago = 0
-    precio = 0
     envios_lista=[]
     for linea in envios:
         if flag:
@@ -264,9 +265,8 @@ def cargar_datos_archivo():
             direccion = normalizacion_direccion(linea[9:28])
             tipo_envio = int(linea[29])
             forma_pago = int(linea[30])
-            precio = test_calculo(codigo_postal, tipo_envio, forma_pago)
             
-            envio= Envio(codigo_postal,direccion,tipo_envio, forma_pago, importe=precio)
+            envio= Envio(codigo_postal,direccion,tipo_envio, forma_pago)
             
             envios_lista.append(envio)
     envios.close()
@@ -291,14 +291,14 @@ def carga_teclado(lista_envios):
         else:
             print('\033[1m La forma de pago no es valida\033[0m')
     
-    precio = test_calculo(codigo_postal, tipo_envio, forma_pago)
+    precio = calcular_importe(codigo_postal, tipo_envio, forma_pago)
 
     valido = False
 
 
     if not valido:
         valido = hard_control(direccion)
-    envio = Envio(codigo_postal,direccion,tipo_envio,forma_pago,importe=precio)
+    envio = Envio(codigo_postal,direccion,tipo_envio,forma_pago)
     return envio
 
 
@@ -330,7 +330,7 @@ def cantidad_de_envios_por_tipo(lista_envios,control):
     for envio in lista_envios:
         if hard_control(envio.direccion) or control == 'Soft Control':
             cont_envios_validos[envio.tipo] += 1
-            cont_importes_final[envio.tipo] += envio.importe
+            cont_importes_final[envio.tipo] += envio.get_importe()
 
     return cont_envios_validos, cont_importes_final
             
@@ -429,9 +429,9 @@ def opcion_9(lista_envios, tipo_control):
     contador=0
     for item in lista_envios:
         cantidad += 1
-        suma += test_calculo(item.codigo,item.tipo,item.forma_pago)
+        suma += item.get_importe()
     promedio= suma // cantidad if cantidad > 0 else 0
     for item in lista_envios:
-        if test_calculo(item.codigo,item.tipo,item.forma_pago) < promedio:
+        if item.get_importe() < promedio:
             contador +=1
     print('Promedio: ',promedio, '\nCantidad menores al promedio: ', contador)
