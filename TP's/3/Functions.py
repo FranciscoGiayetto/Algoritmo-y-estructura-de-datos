@@ -10,7 +10,7 @@ class Envio:
 
     def get_destino(self):
         return calcular_importe(self.codigo, self.tipo, self.forma_pago)[1]
-    
+
     def mostrar(self):
         return f"Código: {self.codigo} / Dirección: {self.direccion}/ Tipo de envío {self.tipo} / Forma de Pago {self.forma_pago} / País: {self.get_destino()}"
 
@@ -382,7 +382,8 @@ def opcion_2(lista_envios, tipo_control):
 
 
 def opcion_3(lista_envios, tipo_control):
-    decision = input('Si quiere mostrar todos los envíos ponga 0, sino el numero de la cantidad de registros que desea mostrar: ')
+    decision = input(
+        'Si quiere mostrar todos los envíos ponga 0, sino el numero de la cantidad de registros que desea mostrar: ')
     if son_numeros(decision):
         lista_envios = ordenar_menor_mayor(lista_envios, int(decision), True)
     else:
@@ -453,7 +454,8 @@ def opcion_8(lista_envios, tipo_control):
         tipo_maximo = determinar_maximo(lista_envios, tipo_control)
         porcentaje = max(cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]) / sum(
             cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1])
-        print(f'El tipo de envío con mayor cantidad de importes acumulados fue el Tipo {tipo_maximo}. Porcentaje: {int(porcentaje * 100)} %')
+        print(
+            f'El tipo de envío con mayor cantidad de importes acumulados fue el Tipo {tipo_maximo}. Porcentaje: {int(porcentaje * 100)} %')
 
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
