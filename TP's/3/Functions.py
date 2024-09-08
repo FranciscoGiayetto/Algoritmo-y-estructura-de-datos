@@ -276,26 +276,32 @@ def cargar_datos_archivo():
 
 
 def carga_teclado(lista_envios):
-    codigo_postal = normalizacion_codigo_postal(input('Ingrese el codigo postal: '))
-    direccion = normalizacion_direccion(input('Ingrese la direccion: '))
+    codigo_postal = normalizacion_codigo_postal(input('Ingrese el código postal: '))
+    direccion = normalizacion_direccion(input('Ingrese la dirección: '))
     continuar = True
 
     while continuar:
         tipo_envio = int(input(
-            'Ingrese el tipo de envio del 0 al 6: \nCarta Simple 0 \nCarta Simple 1 \nCarta Simple 2 \nCarta Certificada 3 \nCarta Certificada 4 \nCarta Expresa 5 \nCarta Expresa 6\n'))
+            'Ingrese el tipo de envío (0-6):\n'
+            '0 - Carta Simple\n'
+            '1 - Carta Simple\n'
+            '2 - Carta Simple\n'
+            '3 - Carta Certificada\n'
+            '4 - Carta Certificada\n'
+            '5 - Carta Expresa\n'
+            '6 - Carta Expresa\n'
+        ))
         if validacion_tipo_envio(tipo_envio):
             continuar = False
         else:
-            print('\033[1m El tipo de envio no es valido\033[0m')
+            print('\033[1m El tipo de envío no es válido\033[0m')
     continuar = True
     while continuar:
-        forma_pago = int(input('Ingrese la forma de pago(1-efectivo 2-tarjeta de credito: )'))
+        forma_pago = int(input('Ingrese la forma de pago (1-efectivo, 2-tarjeta de crédito): '))
         if veiificacion_forma_pago(forma_pago):
             continuar = False
         else:
-            print('\033[1m La forma de pago no es valida\033[0m')
-
-    precio = calcular_importe(codigo_postal, tipo_envio, forma_pago)[0]
+            print('\033[1m La forma de pago no es válida\033[0m')
 
     valido = False
 
@@ -307,14 +313,14 @@ def carga_teclado(lista_envios):
 
 def buscar_direc_y_tp(lista_envios):
     resultado_envio = None
-    bsqd_direccion = input('Ingrese la direccion del envio: ')
+    bsqd_direccion = input('Ingrese la dirección del envío: ')
     continuar = True
     while continuar:
-        bsqd_tipo_envio = int(input('Ingrese el tipo del envio: '))
+        bsqd_tipo_envio = int(input('Ingrese el tipo de envío: '))
         if validacion_tipo_envio(bsqd_tipo_envio):
             continuar = False
         else:
-            print('\033[1m El tipo de envio no es valido \033[0m')
+            print('\033[1m El tipo de envío no es válido \033[0m')
 
     for envio in lista_envios:
         if envio.direccion == bsqd_direccion and envio.tipo == bsqd_tipo_envio:
@@ -322,9 +328,9 @@ def buscar_direc_y_tp(lista_envios):
             break
 
     if resultado_envio is not None:
-        print(f"El resultado de la busqueda es: {resultado_envio}")
+        print(f"El resultado de la búsqueda es: {resultado_envio}")
     else:
-        print("\033[1mNo existe ningun envio que coincida con la busqueda\033[0m")
+        print("\033[1mNo existe ningún envío que coincida con la búsqueda\033[0m")
 
 
 def cantidad_de_envios_por_tipo(lista_envios, control):
