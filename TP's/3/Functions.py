@@ -409,8 +409,15 @@ def mostrar_envios_tipo(lista_envios, numero, control):
                  'Carta Certificada ', 'Carta Certificada ',
                  'Carta Expresa ', 'Carta Expresa ']
         cantidad_envios = cantidad_de_envios_por_tipo(lista_envios, control)[numero]
-        for i in range(len(tipos)):
-            print(f'Tipo: ', i, ' cantidad: ', cantidad_envios[i])
+        if numero == 0:
+            print('Cantidad de envios validos por tipo de envio')
+            for i in range(len(tipos)):
+                print(f'Tipo: ', i, ' cantidad: ', cantidad_envios[i])
+        else:
+            print('Suma total de importe por tipo de envio')
+            for i in range(len(tipos)):
+                print(f'Tipo: ', i, ' cantidad: $', cantidad_envios[i])
+
 
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
@@ -424,12 +431,17 @@ def opcion_7(lista_envios, tipo_control):
     mostrar_envios_tipo(lista_envios, 1, tipo_control)
 
 
+def determinar_maximo(lista_envios, tipo_control):
+    lista = cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]
+    return lista.index(max(lista))
+
+
 def opcion_8(lista_envios, tipo_control):
     if lista_envios and cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]:
-        print(sum(cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]))
+        tipo_maximo = determinar_maximo(lista_envios, tipo_control)
         porcentaje = max(cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]) / sum(
             cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1])
-        print('El maximo fue: ', max(cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]), 'Porcentaje %',
+        print('El tipo de envio con mayor cantidad de importes acumulados fue el Tipo', tipo_maximo, ' Porcentaje %',
               int(porcentaje * 100))
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
@@ -446,4 +458,5 @@ def opcion_9(lista_envios, tipo_control):
     for item in lista_envios:
         if item.get_importe() < promedio:
             contador += 1
-    print('Promedio: ', promedio, '\nCantidad menores al promedio: ', contador)
+    print('Promedio de importes de todos los envios: $', promedio,
+          '\nCantidad de envios con importes menores al promedio: ', contador)
