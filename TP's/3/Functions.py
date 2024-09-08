@@ -304,14 +304,14 @@ def carga_teclado(lista_envios):
 
 def buscar_direc_y_tp(lista_envios):
     resultado_envio = None
-    bsqd_direccion = input('Ingrese la direccion del envio: ')
+    bsqd_direccion = input('Ingrese la dirección del envío: ')
     continuar = True
     while continuar:
-        bsqd_tipo_envio = int(input('Ingrese el tipo del envio: '))
+        bsqd_tipo_envio = int(input('Ingrese el tipo del envío: '))
         if validacion_tipo_envio(bsqd_tipo_envio):
             continuar = False
         else:
-            print('\033[1m El tipo de envio no es valido \033[0m')
+            print('\033[1m El tipo de envío no es valido \033[0m')
 
     for envio in lista_envios:
         if envio.direccion == bsqd_direccion and envio.tipo == bsqd_tipo_envio:
@@ -319,9 +319,9 @@ def buscar_direc_y_tp(lista_envios):
             break
 
     if resultado_envio is not None:
-        print(f"El resultado de la busqueda es: {resultado_envio}")
+        print(f"El resultado de la búsqueda es: {resultado_envio}")
     else:
-        print("\033[1mNo existe ningun envio que coincida con la busqueda\033[0m")
+        print("\033[1mNo existe ningun envio que coincida con la búsqueda\033[0m")
 
 
 def cantidad_de_envios_por_tipo(lista_envios, control):
@@ -344,7 +344,7 @@ def mostrar_menu():
     print("3 - Mostrar registros")
     print("4 - Buscar envío por dirección y tipo de envío")
     print("5 - Buscar código postal")
-    print("6 - Determinar cantidad de tipos de envios")
+    print("6 - Determinar cantidad de tipos de envíos")
     print("7 - Calcular importes finales por tipos")
     print("8 - Mostrar envio con mayor importe acumulado y porcentaje sobre total")
     print("9 - Calcular y mostrar importe final del envío")
@@ -361,7 +361,7 @@ def opcion_1(lista_envios, tipo_control):
     if confirmacion.lower() == 's':
         lista_envios.clear()
         lista_envios.extend(cargar_datos_archivo()[0])
-        print("\033[1m Datos cargados del archivo.\033[0m")
+        print("\033[1m Datos cargados del archivo correctamente.\033[0m")
     else:
         print('\033[1m No se cargaron datos.\033[0m')
     return cargar_datos_archivo()[1]
@@ -373,8 +373,11 @@ def opcion_2(lista_envios, tipo_control):
 
 
 def opcion_3(lista_envios, tipo_control):
-    decision = int(input('Si quiere mostrar todos ponga 0, sino el numero de la cantidad de registros: '))
-    lista_envios = ordenar_menor_mayor(lista_envios, decision, True)
+    decision = input('Si quiere mostrar todos los envíos ponga 0, sino el numero de la cantidad de registros que desea mostrar: ')
+    if son_numeros(decision):
+        lista_envios = ordenar_menor_mayor(lista_envios, int(decision), True)
+    else:
+        print("\033[1m Opción no válida, ingrese un número.\033[0m")
 
 
 def opcion_4(lista_envios, tipo_control):
@@ -386,7 +389,7 @@ def opcion_4(lista_envios, tipo_control):
 
 def opcion_5(lista_envios, tipo_control):
     if lista_envios:
-        codigo = input('ingrese el codigo posta a buscar: ')
+        codigo = input('Ingrese el codigo posta a buscar: ')
         envio = buscar_codigo_postal(ordenar_menor_mayor(lista_envios, 0, False), codigo)
         if envio is not False:
             print('\033[1m Lo hemos encontrado \033[0m')
@@ -396,7 +399,7 @@ def opcion_5(lista_envios, tipo_control):
             else:
                 envio.forma_pago = 1
 
-            print(envio.mostrar(), 'Despues')
+            print(envio.mostrar(), 'Después')
         else:
             print('\033[1m No encontrado \033[0m')
     else:
@@ -410,11 +413,11 @@ def mostrar_envios_tipo(lista_envios, numero, control):
                  'Carta Expresa ', 'Carta Expresa ']
         cantidad_envios = cantidad_de_envios_por_tipo(lista_envios, control)[numero]
         if numero == 0:
-            print('Cantidad de envios validos por tipo de envio')
+            print('Cantidad de envíos validos por tipo de envío')
             for i in range(len(tipos)):
                 print(f'Tipo: ', i, ' cantidad: ', cantidad_envios[i])
         else:
-            print('Suma total de importe por tipo de envio')
+            print('Suma total de importe por tipo de envío')
             for i in range(len(tipos)):
                 print(f'Tipo: ', i, ' cantidad: $', cantidad_envios[i])
 
@@ -441,8 +444,8 @@ def opcion_8(lista_envios, tipo_control):
         tipo_maximo = determinar_maximo(lista_envios, tipo_control)
         porcentaje = max(cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1]) / sum(
             cantidad_de_envios_por_tipo(lista_envios, tipo_control)[1])
-        print('El tipo de envio con mayor cantidad de importes acumulados fue el Tipo', tipo_maximo, ' Porcentaje %',
-              int(porcentaje * 100))
+        print(f'El tipo de envío con mayor cantidad de importes acumulados fue el Tipo {tipo_maximo}. Porcentaje: {int(porcentaje * 100)} %')
+
     else:
         print('\033[1m No existen envíos cargados, cargar envíos para realizar la búsqueda. \033[0m')
 
@@ -458,5 +461,5 @@ def opcion_9(lista_envios, tipo_control):
     for item in lista_envios:
         if item.get_importe() < promedio:
             contador += 1
-    print('Promedio de importes de todos los envios: $', promedio,
-          '\nCantidad de envios con importes menores al promedio: ', contador)
+    print('Promedio de importes de todos los envíos: $', promedio,
+          '\nCantidad de envíos con importes menores al promedio: ', contador)
