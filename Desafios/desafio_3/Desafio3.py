@@ -15,4 +15,4 @@ def mostrar(lista,numero):
     print(f"Los números que más se repiten son {numeros_mas_frecuentes} y se repiten {max_frecuencia} veces.")
 
 mostrar(soporte.vector_unknown_range(300000),1)
-mostrar(soporte.vector_known_range(300000),1)
+mostrar(soporte.vector_known_range(300000),2)
