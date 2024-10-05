@@ -16,7 +16,10 @@ def mostrar_menu():
     print("3 - Mostrar todos los envíos")
     print("4 - Buscar envío por Código Postal")
     print("5 - Buscar envío por Dirección")
-    print("6 - Salir")
+    print("6 - Determinar y mostrar la cantidad de envíos por tipo y forma de pago")
+    print("7 - Totalizar envíos por tipo de envío y forma de pago")
+    print("8 - Calcular importe promedio y listar envíos por encima del promedio")
+    print("9 - Salir")
     print("=" * 40 + "\n")
 
 
@@ -245,3 +248,26 @@ def busqueda_direccion(archivo_binario, direccion):
             pass  
 
     return print("No lo encontramos.")
+
+def opcion_6(archivo_binario):
+    matriz_contadores = [[0 for _ in range(2)] for _ in range(7)]
+    tipos_envio = ['Carta Simple', 'Carta Simple', 'Carta Simple', 'Carta Certificada', 'Carta Certificada', 'Carta Expresa', 'Carta Expresa']
+    formas_pago = ['Efectivo', 'Tarjeta de credito']  
+
+    with open(archivo_binario, 'rb') as binfile:
+        try:
+            while True:
+                envio = pickle.load(binfile)
+                tipo = int(envio.tipo)  
+                forma_pago = int(envio.forma_pago)  
+
+                matriz_contadores[tipo][forma_pago-1] += 1
+        except EOFError:
+            pass  
+        
+    print("\nCantidad de envíos por tipo y forma de pago:")
+    for i in range(len(tipos_envio)):
+        for j in range(len(formas_pago)):
+            if matriz_contadores[i][j] > 0:
+                print(f"Tipo {i}({tipos_envio[i]}) - {formas_pago[j]}: {matriz_contadores[i][j]}")
+

@@ -2,19 +2,15 @@ from Functions import *
 
 
 def principal():
-    lista_envios = []
-    tipo_control = 'Soft Control'
     opcion_int = 0
-    acciones = [opcion_1,opcion_2,opcion_3,opcion_4, opcion_5]
-    validacion_7 = False 
-
-    while opcion_int != 10:
+    acciones = [opcion_1,opcion_2,opcion_3,opcion_4, opcion_5,opcion_6] 
+    while opcion_int != 9:
         mostrar_menu()
         opcion = obtener_opcion()
         if son_numeros(opcion):
             opcion_int = int(opcion)
 
-            if 1 <= opcion_int <= 9:
+            if 1 <= opcion_int <= 8:
                 if opcion_int == 1:
                     acciones[opcion_int - 1]()
                 else:
