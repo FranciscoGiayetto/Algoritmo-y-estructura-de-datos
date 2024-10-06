@@ -1,10 +1,11 @@
 class Envio:
-    def __init__(self, codigo, direccion, tipo, forma_pago, pais):
+    def __init__(self, codigo, direccion, tipo, forma_pago, pais, importe):
         self.codigo = codigo
         self.direccion = direccion
         self.tipo = tipo
         self.forma_pago = forma_pago
         self.pais = pais
+        self.importe = importe
 
     def mostrar(self):
         return (

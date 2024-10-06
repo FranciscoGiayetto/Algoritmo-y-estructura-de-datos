@@ -1,5 +1,6 @@
 import os
 import pickle
+from clase import Envio
 
 def son_numeros(cadena):
     for letra in cadena:
@@ -49,17 +50,18 @@ def crear_archivo_binario(archivo_csv, archivo_binario):
         with open(archivo_binario, 'wb') as file_binario:
             for linea in file_csv:
                 row = linea.strip().split(',')
+                destino = calcular_pais(row[0])
                 envio = Envio(
                     codigo=row[0],       
                     direccion=row[1],    
                     tipo=row[2],        
                     forma_pago=row[3],
-                    pais= calcular_pais(row[0]) 
+                    pais= destino, 
+                    importe = calcular_importe(destino, row[0], int(row[3]), int(row[2]))
                 )
                 pickle.dump(envio, file_binario)
 
     print(f"Archivo binario '{archivo_binario}' creado con éxito.")
-
 
 def mostrar_contenido_binario(archivo_binario):
     print("\nContenido del archivo binario:")
@@ -74,10 +76,8 @@ def mostrar_contenido_binario(archivo_binario):
 
 
 
-def opcion_1():
+def opcion_1(archivo_binario):
     archivo_csv = 'envios-tp4.csv'
-    archivo_binario = 'envios_pickle.bin'
-
     crear_archivo_binario(archivo_csv, archivo_binario)
     return archivo_binario
 
@@ -96,10 +96,6 @@ def opcion_5(archivo_binario):
     busqueda_direccion(archivo_binario,direccion)
 
 
-
-#2
-
-from clase import Envio
 def normalizacion_codigo_postal(codigo_postal):
     codigo_postal_sin_espacios = ''
     for i in codigo_postal:
@@ -169,7 +165,8 @@ def carga_teclado(archivo_binario):
         else:
             print('\033[1m La forma de pago no es válida\033[0m')
     
-    envio = Envio(codigo_postal, direccion, tipo_envio, forma_pago, calcular_pais(codigo_postal))
+    destino = calcular_pais(codigo_postal)
+    envio = Envio(codigo_postal, direccion, tipo_envio, forma_pago, destino, calcular_importe(destino, codigo_postal, forma_pago, tipo_envio))
     
     with open(archivo_binario, 'ab') as binfile:
         pickle.dump(envio, binfile)
@@ -223,6 +220,33 @@ def calcular_pais(cp):
 
     return 'Otro'
 
+def calcular_importe(pais, codigo, forma_pago, tipo):
+        importes = (1100, 1800, 2450, 8300, 10900, 14300, 17900)
+        monto = importes[tipo]
+        if pais == 'Argentina':
+            inicial = monto
+        else:
+            if pais == 'Bolivia' or pais == 'Paraguay' or (pais == 'Uruguay' and codigo[0] == '1'):
+                inicial = int(monto * 1.20)
+            elif pais == 'Chile' or (pais == 'Uruguay' and codigo[0] != '1'):
+                inicial = int(monto * 1.25)
+            elif pais == 'Brasil':
+                if codigo[0] == '8' or codigo[0] == '9':
+                    inicial = int(monto * 1.20)
+                else:
+                    if codigo[0] == '0' or codigo[0] == '1' or codigo[0] == '2' or codigo[0] == '3':
+                        inicial = int(monto * 1.25)
+                    else:
+                        inicial = int(monto * 1.30)
+            else:
+                inicial = int(monto * 1.50)
+
+        final = inicial
+        if forma_pago == 1:
+            final = int(0.9 * inicial)
+
+        return final
+
 def busqueda_codigo_postal(archivo_binario, codigo_postal):
     cantidad=0
     with open(archivo_binario, 'rb') as binfile:
@@ -249,7 +273,22 @@ def busqueda_direccion(archivo_binario, direccion):
 
     return print("No lo encontramos.")
 
-def opcion_6(archivo_binario):
+def total_envios(matriz_contadores, tipos_envio, formas_pago):
+    print("\nTotal de envíos por tipo de envío:")
+    for i in range(len(tipos_envio)):
+        total_fila = 0
+        for j in range(len(formas_pago)):
+            total_fila += matriz_contadores[i][j]
+        print(f"Tipo {i}({tipos_envio[i]}): {total_fila}")
+    
+    print("\nTotal de envíos por forma de pago:")
+    for j in range(len(formas_pago)):
+        total_columna = 0
+        for i in range(len(tipos_envio)):
+            total_columna += matriz_contadores[i][j]
+        print(f"{formas_pago[j]}: {total_columna}")
+
+def generar_matriz(archivo_binario):
     matriz_contadores = [[0 for _ in range(2)] for _ in range(7)]
     tipos_envio = ['Carta Simple', 'Carta Simple', 'Carta Simple', 'Carta Certificada', 'Carta Certificada', 'Carta Expresa', 'Carta Expresa']
     formas_pago = ['Efectivo', 'Tarjeta de credito']  
@@ -264,10 +303,84 @@ def opcion_6(archivo_binario):
                 matriz_contadores[tipo][forma_pago-1] += 1
         except EOFError:
             pass  
-        
+    
+
+    return matriz_contadores, tipos_envio,formas_pago
+
+def opcion_6(archivo_binario):
+    matriz_contadores, tipos_envio, formas_pago = generar_matriz(archivo_binario)
     print("\nCantidad de envíos por tipo y forma de pago:")
     for i in range(len(tipos_envio)):
         for j in range(len(formas_pago)):
             if matriz_contadores[i][j] > 0:
                 print(f"Tipo {i}({tipos_envio[i]}) - {formas_pago[j]}: {matriz_contadores[i][j]}")
+    return matriz_contadores, tipos_envio, formas_pago 
+    
 
+def opcion_7(archivo_binario,matriz_contadores, tipos_envio, formas_pago ):
+    total_envios(matriz_contadores, tipos_envio, formas_pago)
+ 
+    
+
+def add_in_order(arreglo, envio):
+    n = len(arreglo)
+    pos = n
+    izq, der = 0, n-1
+    while izq <= der:
+        c = (izq + der) // 2
+        if arreglo[c].codigo == envio.codigo:
+            pos = c
+            break
+        
+        if envio.codigo < arreglo[c].codigo:
+            der = c - 1
+        else:
+            izq = c + 1
+    
+    if izq > der:
+        pos = izq
+    arreglo[pos:pos] = [envio]
+
+
+def get_importes_mayores(archivo_binario, condicion):
+    lista_envios = []
+
+    if not os.path.exists(archivo_binario):
+        print('El archivo', archivo_binario , 'no existe...')
+        print()
+        return
+
+    tbm = os.path.getsize(archivo_binario)
+    m = open(archivo_binario , 'rb')
+    print('Creando el arreglo desde el archivo', archivo_binario, '...')
+    while m.tell() < tbm:
+        envio = pickle.load(m)
+        if envio.importe > condicion:
+            add_in_order(lista_envios, envio)
+    m.close()
+    print('... hecho')
+    print()
+
+    return lista_envios
+
+def opcion_8(archivo_binario):
+    promedio = [0,0,0]
+
+    if not os.path.exists(archivo_binario):
+        print('El archivo', archivo_binario , 'no existe...')
+        print()
+        return
+
+    tbm = os.path.getsize(archivo_binario)
+    m = open(archivo_binario , 'rb')
+    print('Creando el arreglo desde el archivo', archivo_binario, '...')
+    while m.tell() < tbm:
+        envio = pickle.load(m)
+        promedio[0] += envio.importe
+        promedio[1] += 1
+    
+    promedio[2] = promedio[0] / promedio[1]
+    m.close()
+    print('Promedio calculado satisfactoriamente:', promedio[2])
+    for i in get_importes_mayores(archivo_binario, promedio[2]):
+        print(i.mostrar())
