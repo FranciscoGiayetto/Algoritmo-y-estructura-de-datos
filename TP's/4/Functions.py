@@ -44,35 +44,44 @@ def crear_archivo_binario(archivo_csv, archivo_binario):
     if os.path.exists(archivo_binario):
         os.remove(archivo_binario)
 
-    with open(archivo_csv, 'r') as file_csv:
-        file_csv.readline() 
-        file_csv.readline()  
-        with open(archivo_binario, 'wb') as file_binario:
-            for linea in file_csv:
-                row = linea.strip().split(',')
-                destino = calcular_pais(row[0])
-                envio = Envio(
-                    codigo=row[0],       
-                    direccion=row[1],    
-                    tipo=row[2],        
-                    forma_pago=row[3],
-                    pais= destino, 
-                    importe = calcular_importe(destino, row[0], int(row[3]), int(row[2]))
-                )
-                pickle.dump(envio, file_binario)
+    file_csv = open(archivo_csv, 'r')
+    file_csv.readline()  
+    file_csv.readline()  
+
+    file_binario = open(archivo_binario, 'wb')
+
+
+    for linea in file_csv:
+        row = linea.strip().split(',')
+        destino = calcular_pais(row[0])
+        envio = Envio(
+                codigo=row[0],       
+                direccion=row[1],    
+                tipo=row[2],        
+                forma_pago=row[3],
+                pais=destino, 
+                importe=calcular_importe(destino, row[0], int(row[3]), int(row[2]))
+            )
+        pickle.dump(envio, file_binario)
+    
+    file_csv.close()
+    file_binario.close()
 
     print(f"Archivo binario '{archivo_binario}' creado con éxito.")
 
 def mostrar_contenido_binario(archivo_binario):
     print("\nContenido del archivo binario:")
-    i=0
-    with open(archivo_binario, 'rb') as binfile:
+    binfile = open(archivo_binario, 'rb')
+
+    while True:
         try:
-            while True:
-                envio = pickle.load(binfile)
-                print(envio.mostrar())
-        except:
-            pass  
+            envio = pickle.load(binfile)
+            print(envio.mostrar())
+        except EOFError:
+            break  
+    
+    binfile.close()
+
 
 
 
@@ -104,18 +113,6 @@ def normalizacion_codigo_postal(codigo_postal):
     return codigo_postal_sin_espacios
 
 
-def normalizacion_direccion(direccion):
-    direccion_sin_espacios = ''
-    for i in range(1, len(direccion)):
-        if direccion[-i] not in ' .':
-            if i != 1:
-                direccion_sin_espacios = direccion[:-i + 1]
-            else:
-                direccion_sin_espacios = direccion
-            break
-    return direccion_sin_espacios
-
-
 def verificacion_envio(tipo_envio):
     if tipo_envio in (0, 1, 2):
         return 'Carta simple'
@@ -137,7 +134,7 @@ def veiificacion_forma_pago(valor):
 
 def carga_teclado(archivo_binario):
     codigo_postal = normalizacion_codigo_postal(input('Ingrese el código postal: '))
-    direccion = normalizacion_direccion(input('Ingrese la dirección: '))
+    direccion = input('Ingrese la dirección: ')
     continuar = True
 
     while continuar:
@@ -168,8 +165,12 @@ def carga_teclado(archivo_binario):
     destino = calcular_pais(codigo_postal)
     envio = Envio(codigo_postal, direccion, tipo_envio, forma_pago, destino, calcular_importe(destino, codigo_postal, forma_pago, tipo_envio))
     
-    with open(archivo_binario, 'ab') as binfile:
-        pickle.dump(envio, binfile)
+    binfile = open(archivo_binario, 'ab')
+
+    pickle.dump(envio, binfile)
+
+    binfile.close()
+
 
     print(f"Datos agregados al archivo binario '{archivo_binario}'.")
 
@@ -248,30 +249,36 @@ def calcular_importe(pais, codigo, forma_pago, tipo):
         return final
 
 def busqueda_codigo_postal(archivo_binario, codigo_postal):
-    cantidad=0
-    with open(archivo_binario, 'rb') as binfile:
-        try:
-            while True:
-                envio = pickle.load(binfile)
-                if envio.codigo == codigo_postal:
-                    cantidad +=1
-                    print(f"Envío encontrado: {envio.mostrar()}")
-        except EOFError:
-            pass  
+    cantidad = 0
+    binfile = open(archivo_binario, 'rb')
 
+    while True:
+        try:
+            envio = pickle.load(binfile)
+            if envio.codigo == codigo_postal:
+                cantidad += 1
+                print(f"Envío encontrado: {envio.mostrar()}")
+        except EOFError:
+            break  
+
+    binfile.close()
     print(f"Cantidad encontrada {cantidad}")
 
-def busqueda_direccion(archivo_binario, direccion):
-    with open(archivo_binario, 'rb') as binfile:
-        try:
-            while True:
-                envio = pickle.load(binfile)
-                if envio.direccion == direccion:
-                    return print(f"Envío encontrado: {envio.mostrar()}")
-        except EOFError:
-            pass  
 
+def busqueda_direccion(archivo_binario, direccion):
+    binfile = open(archivo_binario, 'rb')
+    while True:
+        try:
+            envio = pickle.load(binfile)
+            if envio.direccion == direccion:
+                binfile.close()
+                return print(f"Envío encontrado: {envio.mostrar()}")
+        except EOFError:
+            break
+
+    binfile.close()
     return print("No lo encontramos.")
+
 
 def total_envios(matriz_contadores, tipos_envio, formas_pago):
     print("\nTotal de envíos por tipo de envío:")
@@ -291,21 +298,24 @@ def total_envios(matriz_contadores, tipos_envio, formas_pago):
 def generar_matriz(archivo_binario):
     matriz_contadores = [[0 for _ in range(2)] for _ in range(7)]
     tipos_envio = ['Carta Simple', 'Carta Simple', 'Carta Simple', 'Carta Certificada', 'Carta Certificada', 'Carta Expresa', 'Carta Expresa']
-    formas_pago = ['Efectivo', 'Tarjeta de credito']  
+    formas_pago = ['Efectivo', 'Tarjeta de credito']
 
-    with open(archivo_binario, 'rb') as binfile:
+    binfile = open(archivo_binario, 'rb')
+
+    while True:
         try:
-            while True:
-                envio = pickle.load(binfile)
-                tipo = int(envio.tipo)  
-                forma_pago = int(envio.forma_pago)  
+            envio = pickle.load(binfile)
+            tipo = int(envio.tipo)  
+            forma_pago = int(envio.forma_pago)  
 
-                matriz_contadores[tipo][forma_pago-1] += 1
+            matriz_contadores[tipo][forma_pago-1] += 1
         except EOFError:
-            pass  
-    
+            break  
 
-    return matriz_contadores, tipos_envio,formas_pago
+    binfile.close()
+
+    return matriz_contadores, tipos_envio, formas_pago
+
 
 def opcion_6(archivo_binario):
     matriz_contadores, tipos_envio, formas_pago = generar_matriz(archivo_binario)
