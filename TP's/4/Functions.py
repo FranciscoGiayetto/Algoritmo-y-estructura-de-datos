@@ -210,29 +210,29 @@ def calcular_pais(cp):
     if n == 8:
         if es_letra(cp[0]) and cp[0] != "I" and cp[0] != "O":
             if (
-                es_digito(cp[1])
-                and es_digito(cp[2])
-                and es_digito(cp[3])
-                and es_digito(cp[4])
+                    es_digito(cp[1])
+                    and es_digito(cp[2])
+                    and es_digito(cp[3])
+                    and es_digito(cp[4])
             ):
                 if es_letra(cp[5]) and es_letra(cp[6]) and es_letra(cp[7]):
                     return "Argentina"
 
     elif n == 4:
         if (
-            es_digito(cp[0])
-            and es_digito(cp[1])
-            and es_digito(cp[2])
-            and es_digito(cp[3])
+                es_digito(cp[0])
+                and es_digito(cp[1])
+                and es_digito(cp[2])
+                and es_digito(cp[3])
         ):
             return "Bolivia"
 
     elif n == 9:
         if (
-            es_digito(cp[0])
-            and es_digito(cp[1])
-            and es_digito(cp[2])
-            and es_digito(cp[3])
+                es_digito(cp[0])
+                and es_digito(cp[1])
+                and es_digito(cp[2])
+                and es_digito(cp[3])
         ):
             if es_digito(cp[4]) and cp[5] == "-":
                 if es_digito(cp[6]) and es_digito(cp[7]) and es_digito(cp[8]):
@@ -240,20 +240,20 @@ def calcular_pais(cp):
 
     elif n == 7:
         if (
-            es_digito(cp[0])
-            and es_digito(cp[1])
-            and es_digito(cp[2])
-            and es_digito(cp[3])
+                es_digito(cp[0])
+                and es_digito(cp[1])
+                and es_digito(cp[2])
+                and es_digito(cp[3])
         ):
             if es_digito(cp[4]) and es_digito(cp[5]) and es_digito(cp[6]):
                 return "Chile"
 
     elif n == 6:
         if (
-            es_digito(cp[0])
-            and es_digito(cp[1])
-            and es_digito(cp[2])
-            and es_digito(cp[3])
+                es_digito(cp[0])
+                and es_digito(cp[1])
+                and es_digito(cp[2])
+                and es_digito(cp[3])
         ):
             if es_digito(cp[4]) and es_digito(cp[5]):
                 return "Paraguay"
@@ -273,9 +273,9 @@ def calcular_importe(pais, codigo, forma_pago, tipo):
         inicial = monto
     else:
         if (
-            pais == "Bolivia"
-            or pais == "Paraguay"
-            or (pais == "Uruguay" and codigo[0] == "1")
+                pais == "Bolivia"
+                or pais == "Paraguay"
+                or (pais == "Uruguay" and codigo[0] == "1")
         ):
             inicial = int(monto * 1.20)
         elif pais == "Chile" or (pais == "Uruguay" and codigo[0] != "1"):
@@ -285,10 +285,10 @@ def calcular_importe(pais, codigo, forma_pago, tipo):
                 inicial = int(monto * 1.20)
             else:
                 if (
-                    codigo[0] == "0"
-                    or codigo[0] == "1"
-                    or codigo[0] == "2"
-                    or codigo[0] == "3"
+                        codigo[0] == "0"
+                        or codigo[0] == "1"
+                        or codigo[0] == "2"
+                        or codigo[0] == "3"
                 ):
                     inicial = int(monto * 1.25)
                 else:
