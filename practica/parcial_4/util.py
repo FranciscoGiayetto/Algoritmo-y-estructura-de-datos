@@ -1,19 +1,21 @@
 def ordenamiento(lista, objeto):
-    n = len(lista)
-    pos = n
-    izq, der = 0, n - 1
-    while izq <= der:
-        c = (izq + der) // 2
-        if lista[c].nombre == objeto.nombre:
-            pos = c
+    longitud = len(lista)
+    posicion = longitud
+    izquierda = 0
+    derecha = longitud - 1
+
+    while izquierda <= derecha:
+        medio = (izquierda + derecha) // 2
+        if lista[medio].nombre == objeto.nombre:
+            posicion = medio
             break
-        if objeto.nombre < lista[c].nombre:
-            der = c - 1
+        if objeto.nombre < lista[medio].nombre:
+            derecha = medio - 1
         else:
-            izq = c + 1
-    if izq > der:
-        pos = izq
-    lista[pos:pos] = [objeto]
+            izquierda = medio + 1
+    if izquierda > derecha:
+        posicion = izquierda
+    lista[posicion:posicion] = [objeto]
 
 import random
 def cargar_datos():
@@ -22,25 +24,25 @@ def cargar_datos():
     numero_manzana = random.randint(1, 35)
 
 def matriz_contadores(lista):
-    n = len(lista)
+    longitud = len(lista)
+    #primeras columnas - segunda filas
+    matriz = [[0] * 4 for _ in range(35)]
+    for i in range(longitud):
+        fila = lista[i].numero_manzana - 1
+        columna = lista[i].orientacion - 1
+        matriz[fila][columna] += lista[i].superfie
 
-    ac = [[0] * 4 for _ in range(35)]
-    for i in range(n):
-        f = lista[i].numero_manzana - 1
-        c = lista[i].orientacion - 1
-        ac[f][c] += lista[i].superfie
-
-    for f in range(35):
-        for c in range(4):
-            if ac[f][c] != 0:
-                print("Manzana:", f + 1, "Orientación:", c + 1, "Superficie:", ac[f][c])
+    for fila in range(35):
+        for columna in range(4):
+            if matriz[fila][columna] != 0:
+                print("Manzana:", fila + 1, "Orientación:", columna + 1, "Superficie:", matriz[fila][columna])
     print()
 
     m = int(input("Manzana que desea acumular (entre 1 y 35)?: "))
     sa = 0
-    f = m - 1
-    for c in range(4):
-        sa += ac[f][c]
+    fila = m - 1
+    for columna in range(4):
+        sa += matriz[fila][columna]
     print("La superficie total para la manzana", m, "es:", sa)
     print()
 
